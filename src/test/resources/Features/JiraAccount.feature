@@ -1,15 +1,35 @@
 Feature: Jira API validation
-
+  
+  @CreateJiraissue
   Scenario Outline: validating Jira API create issue
     Given Add payload for create the issue "<summary>","<description>"
-    When User should call the API create issue with post http request
+    When User should call "createJiraIssue" with "Post" http request
     Then User should verify the response code should be 201
-    And User should verify the response body should contains "sarvan231"
+    And User should verify the response body should contains "gowtham"
 
     Examples: 
-      | summary                                                  | description                                     |
-      | user unable to click login button                        | login button working properly                   |
-      | user unable to get PNR status                            | not get expected PNR                            |
-      | Unable Select Flights button                             | Flight button not working properly              |
-      | As Payment gateway not working for internet banking      | Internet banking is not get results as expected |
-      | As unable to select more than 2 traveler in one way trip | Not displayed as per customer requirement       |
+      | summary                           | description                       |
+      | user unable to click login button | login button not working properly |
+ 
+  @UpdateJiraissue
+  Scenario Outline: verify the jira update issues
+    Given Add payload for update the issue "<summary>","<description>"
+    When User should call "updateJiraIssue" with "Put" http request
+    Then User should verify the response code should be 204
+
+    Examples: 
+      | summary                                   | description                                   | 
+      | user unable to verify login functionality | login button not working properly as expected | 
+  
+  @GetAllJiraissues
+  Scenario: verify the jira Get issues
+    Given User add the baseuri
+    When User should call "getJiraIssue" with "Get" http request
+    Then User should verify the response code should be 200
+  
+  @Deleteissue
+  Scenario: verify the jira delete issues
+    Given User add the baseuri
+    When User should call "deleteJiraIssue" with "delete" http request
+    Then User should verify the response code should be 204
+

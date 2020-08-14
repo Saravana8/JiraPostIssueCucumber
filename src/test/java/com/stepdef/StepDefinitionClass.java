@@ -1,61 +1,97 @@
 package com.stepdef;
 
+import java.io.IOException;
 
-
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.testng.AssertJUnit;
 
 import com.pages.Output;
 import com.pages.PayLoad;
+import com.utilities.APIResources;
+import com.utilities.Builder;
+import com.utilities.UtilityClass;
 
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
 import io.restassured.RestAssured;
-import io.restassured.authentication.PreemptiveBasicAuthScheme;
-import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
 
-
-public class StepDefinitionClass {
+public class StepDefinitionClass extends UtilityClass {
 
 	RequestSpecification requestSpec;
 	Response response;
+	static String issueId;
 
 	@Given("Add payload for create the issue {string},{string}")
-	public void add_payload_for_create_the_issue(String summary, String description) {
-		PreemptiveBasicAuthScheme scheme = new PreemptiveBasicAuthScheme();
-		scheme.setUserName("saravanak49@gmail.com");
-		scheme.setPassword("pp55hhm6zINySZ3VflJX0E20");
+	public void add_payload_for_create_the_issue(String summary, String description) throws IOException {
 
-		requestSpec = new RequestSpecBuilder().setBaseUri("https://sarvan231.atlassian.net")
-				.setContentType(ContentType.JSON).setAuth(scheme).build();
-
-		requestSpec = RestAssured.given().log().all().spec(requestSpec).body(PayLoad.jiraCreateIssue(summary, description));
+		requestSpec = RestAssured.given().spec(Builder.getBuilder())
+				.body(PayLoad.jiraCreateIssue(summary, description));
 
 	}
 
-	@When("User should call the API create issue with post http request")
-	public void user_should_call_the_API_create_issue_with_post_http_request() {
+	@When("User should call {string} with {string} http request")
+	public void user_should_call_with_http_request(String resource, String reqType) throws ParseException {
 
-		response = requestSpec.when().post("/rest/api/2/issue/");
+		APIResources apiResources = APIResources.valueOf(resource);
+		String resourceName = apiResources.getResource();
+
+		if (reqType.equals("Get")) {
+			response = requestSpec.when().get(resourceName);
+
+		} else if (reqType.equals("Post")) {
+
+			response = requestSpec.when().post(resourceName);
+			JSONParser parser = new JSONParser();
+			JSONObject j = (JSONObject) parser.parse(response.getBody().asString());
+			issueId = (String) j.get("key");
+			System.out.println("Issueid is "+issueId);
+
+		} else if (reqType.equals("Put")) {
+
+			response = requestSpec.when().put(resourceName + "/" + issueId);
+
+		} else if (reqType.equals("delete")) {
+
+			response = requestSpec.when().delete(resourceName + "/" + issueId);
+
+		} else {
+			System.err.println("No Matches found");
+		}
 
 	}
 
 	@Then("User should verify the response code should be {int}")
 	public void user_should_verify_the_response_code_should_be(int statusCode) {
-		
-		AssertJUnit.assertEquals("verifying statuscode",statusCode, response.getStatusCode());
+
+		AssertJUnit.assertEquals("verifying statuscode", statusCode, response.getStatusCode());
 
 	}
 
 	@Then("User should verify the response body should contains {string}")
 	public void user_should_verify_the_response_body_should_contains(String expValue) {
-		
+
 		Output resBody = response.as(Output.class);
-		AssertJUnit.assertTrue("verifying created msg is present", resBody.getSelf().contains(expValue));
-	    
+		AssertJUnit.assertTrue("verifying sarvan name is present", resBody.getSelf().contains(expValue));
+
+	}
+
+	@Given("Add payload for update the issue {string},{string}")
+	public void add_payload_for_update_the_issue(String summary, String description) throws IOException {
+		requestSpec = RestAssured.given().spec(Builder.getBuilder())
+				.body(PayLoad.jiraCreateIssue(summary, description));
+
+	}
+
+	@Given("User add the baseuri")
+	public void user_add_the_baseuri() throws IOException {
+
+		requestSpec = RestAssured.given().log().all().spec(Builder.getBuilder());
+
 	}
 
 }
