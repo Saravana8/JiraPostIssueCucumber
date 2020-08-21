@@ -5,7 +5,7 @@ Feature: Jira API validation
     Given Add payload for create the issue "<summary>","<description>"
     When User should call "createJiraIssue" with "Post" http request
     Then User should verify the response code should be 201
-    And User should verify the response body should contains "gowtham"
+    And User should verify the response body should contains "sarvan"
 
     Examples: 
       | summary                           | description                       |

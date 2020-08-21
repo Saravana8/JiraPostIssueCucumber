@@ -8,7 +8,7 @@ public class PayLoad {
 		issuetype.setName("Bug");
 
 		Project project = new Project();
-		project.setKey("FCB");
+		project.setKey("MAK");
 
 		Fields fields = new Fields();
 		fields.setProject(project);
